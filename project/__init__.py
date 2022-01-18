@@ -11,12 +11,12 @@ def create_app():
     app = Flask(__name__)
 
     # Configure the Flask application
-    config_type = os.getenv('CONFIG_TYPE', 'config.DevelopmentConfig')
+    config_type = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')
     app.config.from_object(config_type)
-
     register_blueprints(app)
     configure_logging(app)
     register_app_callbacks(app)
+    register_error_page(app)
     return app
 
 
@@ -26,7 +26,6 @@ def register_blueprints(app):
 
     app.register_blueprint(stocks_blueprint)
     app.register_blueprint(users_blueprint, url_prefix='/users')
-
 
 def configure_logging(app):
     # Logging Configuration
@@ -62,3 +61,11 @@ def register_app_callbacks(app):
     def app_teardown_appcontext(error=None):
         app.logger.info('Calling teardown_appcontext() for the Flask application...')
 
+def register_error_page(app):
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(405)
+    def page_not_found(e):
+        return render_template('405.html'), 405

@@ -3,7 +3,6 @@ import os
 
 class Config(object):
     FLASK_ENV = 'development'
-    DEBUG = False
     TESTING = False
     SECRET_KEY = os.getenv('SECRET_KEY', default='BAD_SECRET_KEY')
 
