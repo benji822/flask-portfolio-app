@@ -1,5 +1,7 @@
 from flask import (current_app, flash, redirect, render_template, request,
                    session, url_for)
+from project import database as db
+from project.models import Stock
 
 from . import stocks_blueprint
 
@@ -28,22 +30,23 @@ def index():
 
 @stocks_blueprint.route('/stocks/', methods=['GET'])
 def list_stocks():
-    return render_template('stocks/stocks.html')
+    stocks = Stock.query.order_by(Stock.id).all()
+    return render_template('stocks/stocks.html', stocks=stocks)
 
 
 @stocks_blueprint.route('/add_stock', methods=['GET', 'POST'])
 def add_stock():
     if request.method == 'POST':
-        for key, value in request.form.items():
-            print(f'{key}: {value}')
+        new_stock = Stock(
+            request.form['stock_symbol'],
+            request.form['number_of_shares'],
+            request.form['purchase_price']
+        )
+        db.session.add(new_stock)
+        db.session.commit()
 
-        session['stock_symbol'] = request.form['stock_symbol']
-        session['number_of_shares'] = request.form['number_of_shares']
-        session['purchase_price'] = request.form['purchase_price']
-        flash(
-            f'Added new stock ({ request.form["stock_symbol"] })!', 'success')
-        current_app.logger.info(
-            f'Added new stock ({ request.form["stock_symbol"] })!')
+        flash(f'Added new stock ({ request.form["stock_symbol"] })!', 'success')
+        current_app.logger.info(f'Added new stock ({ request.form["stock_symbol"] })!')
         return redirect(url_for('stocks.list_stocks'))
 
     return render_template('stocks/add_stock.html')

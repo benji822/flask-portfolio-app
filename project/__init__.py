@@ -4,7 +4,14 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template
 from flask.logging import default_handler
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
+# Create the instances of the Flask extensions in the global scope,
+# but without any arguments passed in. These instances are not
+# attached to the Flask application at this point.
+database = SQLAlchemy()
+db_migrate = Migrate()
 
 def create_app():
     # Create the Flask application
@@ -13,6 +20,8 @@ def create_app():
     # Configure the Flask application
     config_type = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')
     app.config.from_object(config_type)
+
+    initialize_extensions(app)
     register_blueprints(app)
     configure_logging(app)
     register_app_callbacks(app)
@@ -69,3 +78,9 @@ def register_error_page(app):
     @app.errorhandler(405)
     def page_not_found(e):
         return render_template('405.html'), 405
+
+def initialize_extensions(app):
+    # Since the application instance is now created, pass it to each Flask
+    # extension instance to bind it to the Flask application instance (app)
+    database.init_app(app)
+    db_migrate.init_app(app, database)
