@@ -1,6 +1,3 @@
-from app import app
-
-
 def test_get_add_stock_page(test_client):
     """
     GIVEN a Flask application
