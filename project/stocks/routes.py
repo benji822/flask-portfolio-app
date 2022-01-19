@@ -1,3 +1,4 @@
+import click
 from flask import (current_app, flash, redirect, render_template, request,
                    session, url_for)
 from project import database as db
@@ -50,3 +51,25 @@ def add_stock():
         return redirect(url_for('stocks.list_stocks'))
 
     return render_template('stocks/add_stock.html')
+
+
+@stocks_blueprint.cli.command('create_default_set')
+def create_default_set():
+    """Create three new stocks and add them to the database"""
+    stock1 = Stock('HD', '25', '247.29')
+    stock2 = Stock('TWTR', '230', '31.89')
+    stock3 = Stock('DIS', '65', '118.77')
+    db.session.add(stock1)
+    db.session.add(stock2)
+    db.session.add(stock3)
+    db.session.commit()
+
+@stocks_blueprint.cli.command('create')
+@click.argument('symbol')
+@click.argument('number_of_shares')
+@click.argument('purchase_price')
+def create(symbol, number_of_shares, purchase_price):
+    """Create a new stock and add it to the database"""
+    stock = Stock(symbol, number_of_shares, purchase_price)
+    db.session.add(stock)
+    db.session.commit()
